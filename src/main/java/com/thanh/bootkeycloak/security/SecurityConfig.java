@@ -3,6 +3,7 @@ package com.thanh.bootkeycloak.security;
 import com.thanh.bootkeycloak.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,12 +18,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private KeyCloackProperties keyCloackProperties;
+    private KeyCloakProperties keyCloakProperties;
+    private MessageSource messageSource;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
-
                 .authenticationProvider(authenticationProvider());
     }
 
@@ -52,9 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public KeyCloackAuthenticationProvider authenticationProvider() {
-        KeyCloackAuthenticationProvider provider = new KeyCloackAuthenticationProvider();
-        provider.setKeyCloackProperties(keyCloackProperties);
+    public KeyCloakAuthenticationProvider authenticationProvider() {
+        KeyCloakAuthenticationProvider provider = new KeyCloakAuthenticationProvider();
+        provider.setKeyCloakProperties(keyCloakProperties);
         return provider;
     }
 
@@ -62,16 +63,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public LoginFilter loginFilter() throws Exception {
         LoginFilter filter = new LoginFilter();
         filter.setAuthenticationManager(authenticationManager());
+        filter.setMessageSource(messageSource);
         return filter;
     }
 
     @Bean
     public KeyCloakAuthenticationFilter keyCloakAuthenticationFilter() {
-        return new KeyCloakAuthenticationFilter();
+        KeyCloakAuthenticationFilter filter = new KeyCloakAuthenticationFilter(keyCloakProperties);
+        filter.setMessageSource(messageSource);
+        return filter;
     }
 
     @Autowired
-    public void setKeyCloackProperties(KeyCloackProperties keyCloackProperties) {
-        this.keyCloackProperties = keyCloackProperties;
+    public void setKeyCloakProperties(KeyCloakProperties keyCloakProperties) {
+        this.keyCloakProperties = keyCloakProperties;
+    }
+
+    @Autowired
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 }
